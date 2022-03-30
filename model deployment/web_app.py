@@ -1,5 +1,3 @@
-!pip install pandas
-
 from gettext import install
 
 
