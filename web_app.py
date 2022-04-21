@@ -12,9 +12,13 @@ PCA for the numerical values for dimensionality reduction
 #Importing the libraries
 import pandas as pd
 import numpy as np
+from numpy import loadtxt
 import pickle
+import matplotlib.pyplot as plt
 import streamlit as st
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score, precision_score , accuracy_score ,f1_score
 
 
 class DataFrameSelector(BaseEstimator,TransformerMixin):
@@ -26,39 +30,22 @@ class DataFrameSelector(BaseEstimator,TransformerMixin):
         return X[self.attribute_names]
 
 
-#loading in the model and the pipeline files to predict on the data for the first model
-pickle_in = open('model.pkl', 'rb')
-model = pickle.load(pickle_in)
-classes = model.classes_
-
-pickle_in3 = open('pipeline.pkl', 'rb')
-pipeline = pickle.load(pickle_in3)
 
 #loading in the model and the pipeline files to predict on the data for the second model
-pickle_in4 = open('model2.pkl', 'rb')
+pickle_in4 = open('model2_xgb.pkl', 'rb')
 model2 = pickle.load(pickle_in4)
 classes2 = model2.classes_
 
 pickle_in5 = open('pipeline2.pkl', 'rb')
 pipeline2 = pickle.load(pickle_in5)
 
-pickle_in6 = open('model_goals.pkl', 'rb')
+pickle_in6 = open('model_goals_xgb.pkl', 'rb')
 model3 = pickle.load(pickle_in6)
 classes3 = model3.classes_
 
+xgb_preds = loadtxt('xgb_preds.csv', delimiter=',')
+ytest = loadtxt('xgb_ytest.csv', delimiter=',')
 
-#create choose list for first model including the teams names from the trained data
-team1_list = ['Argentina', 'Australia', 'Belgium', 'Brazil', 'Colombia', 'Costa Rica',
-       'Croatia', 'Denmark', 'Egypt', 'England', 'France', 'Germany',
-       'Iceland', 'Iran', 'Japan', 'Mexico', 'Morocco', 'Nigeria', 'Panama',
-       'Peru', 'Poland', 'Portugal', 'Russia', 'Saudi Arabia', 'Senegal',
-       'Serbia', 'Spain', 'Sweden', 'Switzerland', 'Tunisia', 'Uruguay']
-
-team2_list = ['Argentina', 'Australia', 'Belgium', 'Brazil', 'Colombia', 'Costa Rica',
-       'Croatia', 'Denmark', 'Egypt', 'England', 'France',
-       'Iceland', 'Iran', 'Japan', 'Mexico', 'Morocco', 'Nigeria', 'Panama',
-       'Peru', 'Poland', 'Portugal', 'Russia', 'Saudi Arabia', 'Senegal',
-       'Serbia', 'Spain', 'Sweden', 'Switzerland', 'Tunisia', 'Uruguay']
 
 #create choose list for second model including the teams names from the trained data
 team1_list2 = ['Algeria', 'Argentina', 'Australia', 'Belgium', 'Brazil', 'Cameroon',
@@ -74,18 +61,12 @@ team2_list2 = team1_list2.copy()
 
 
 #read the meta data for both home and away teams to assign the data
-#based on the choosen team for the first model
-df_2 = pd.read_csv('df_home_all.csv',index_col=0)
-df_3 = pd.read_csv('df_away_all.csv',index_col=0)
-
-#read the meta data for both home and away teams to assign the data
 #based on the choosen team for the second model
 df_home = pd.read_csv('df_home_all2.csv',index_col=0)
 df_away = pd.read_csv('df_away_all2.csv',index_col=0)
                 
 def welcome():
 	return 'welcome all'
-
 
 # this is the main function in which we define our webpage
 def main():
@@ -95,114 +76,83 @@ def main():
 	# the font and background color, the padding and the text to be displayed
 	html_temp = """
 	<div style ="background-color:yellow;padding:13px">
-	<h1 style ="color:black;text-align:center;">World Cup match Prediction App </h1>
-	<h3 style ="color:black;text-align:center;">First model</h3>
+	<h2 style ="color:black;text-align:center;">World Cup match Prediction App </h2>
 	</div>
 	"""
-	
-	# this line allows us to display a drop list to choose team 1 and team 2 
+
+	choices = ['Match Result Prediction','Model Performance']
+	ticker = st.sidebar.selectbox('Choose a Page',choices)
 	st.markdown(html_temp, unsafe_allow_html = True)
-	team_1 = st.selectbox('Team 1', np.array(team1_list))
-	team_2 = st.selectbox('Team 2', np.array(team2_list))
 
-        # the below line ensures that when the button called 'Predict' is clicked,
-	# the prediction function defined above is called to make the prediction
-	# and store it in the variable result
-	results_df = pd.DataFrame()
-	
-	if st.button("Predict"):
-            if (team_1 == team_2):
-                st.text('Please add different teams')
-            else:
-                results_df = predict_match_result(team_1 , team_2)
+	if (ticker=='Match Result Prediction'):
+            # this line allows us to display a drop list to choose team 1 and team 2 
+            st.header('Match Prediction Page')
+            team_3 = st.selectbox('Team 1', np.array(team1_list2))
+            team_4 = st.selectbox('Team 2', np.array(team2_list2))
+
+
+            # the below line ensures that when the button called 'Predict' is clicked,
+            # the prediction function defined above is called to make the prediction
+            # and store it in the variable result
+            results_df2 = pd.DataFrame()
+
+            # CSS to inject contained in a string
+            hide_table_row_index = """
+            <style>
+            tbody th {display:none}
+            .blank {display:none}
+            </style>
+            """
             
-                st.dataframe(results_df)	    
+            if st.button("Predict "):
+                if (team_3 == team_4):
+                    st.text('Please select different teams')
+                else:
+                    
+                    results_df2 = predict_match_result2(team_3 , team_4)
+
+                    # Inject CSS with Markdown
+                    st.markdown(hide_table_row_index, unsafe_allow_html=True)
+
+                    #st.dataframe(results_df2)
+                    st.table(results_df2.style.format("{:.3f}").hide_index())
+                    #this step to preduict the match final result and display the highest results propabilities
+                    draw_df , home_w_df , away_w_df = predict_match_result_goals(team_3 , team_4)
+
+                    
+                    st.subheader('Match Result prediction')
+
+                    
+                    #add three dataframes of the match results in case of Draw, Win , Lose
+                    col1, col2 ,col3 = st.columns(3)
+                    col1.markdown("Draw Results")
+                    col1.markdown(hide_table_row_index, unsafe_allow_html=True)
+                    col1.table(((pd.DataFrame(draw_df.loc[0].nlargest(3)).T)*(1/(draw_df.loc[0].nlargest(3).values.sum()))).style.format("{:.3f}"))
+                    col2.markdown("Team 1 win Results")
+                    col2.markdown(hide_table_row_index, unsafe_allow_html=True)
+                    col2.table(((pd.DataFrame(home_w_df.loc[0].nlargest(3)).T)*(1/(home_w_df.loc[0].nlargest(3).values.sum()))).style.format("{:.3f}"))
+                    col3.markdown("Team 2 win Results")
+                    col3.markdown(hide_table_row_index, unsafe_allow_html=True)
+                    col3.table(((pd.DataFrame(away_w_df.loc[0].nlargest(3)).T)*(1/(away_w_df.loc[0].nlargest(3).values.sum()))).style.format("{:.3f}"))
 
 
-	#add a header of the second model
-	html_temp2 = """
-        <div style ="background-color:yellow;padding:10px">
-	<h3 style ="color:black;text-align:center;">Second model</h3>
-	</div>
-	"""
-	
-	# this line allows us to display a drop list to choose team 1 and team 2 
-	st.markdown(html_temp2, unsafe_allow_html = True)
-	team_3 = st.selectbox('Team 1', np.array(team1_list2))
-	team_4 = st.selectbox('Team 2', np.array(team2_list2))
+	else:
+		st.header('Match Winner Prediction Model Performance')
+		st.subheader('Performance Metrics')
+		score = 'The accuracy score :' + str(np.round(accuracy_score(ytest, xgb_preds),3))
+		st.text(score)
 
+		
+		score2 = 'The precision score :' + str(np.round(precision_score(ytest, xgb_preds,average='weighted'),3))
+		st.text(score2)
 
-        # the below line ensures that when the button called 'Predict' is clicked,
-	# the prediction function defined above is called to make the prediction
-	# and store it in the variable result
-	results_df2 = pd.DataFrame()
-	
-	if st.button("Predict "):
-            if (team_3 == team_4):
-                st.text('Please add different teams')
-            else:
-                
-                results_df2 = predict_match_result2(team_3 , team_4)
-                
-                st.dataframe(results_df2)
-                #this step to preduict the match final result and display the highest results propabilities
-                draw_df , home_w_df , away_w_df = predict_match_result_goals(team_3 , team_4)
+		score3 = 'The recall score :' + str(np.round(recall_score(ytest, xgb_preds,average='weighted'),3))
+		st.text(score3)
 
-                
-                st.markdown('Match Result prediction')
+		st.subheader('Confusion Matrix')
+		st.pyplot(plot_confusion_matrix(ytest,xgb_preds))
 
-                
-                #add three dataframes of the match results in case of Draw, Win , Lose
-                col1, col2 ,col3 = st.columns(3)
-                col1.markdown("Draw Results")
-                col1.dataframe((pd.DataFrame(draw_df.loc[0].nlargest(3)).T)*(1/(draw_df.loc[0].nlargest(3).values.sum())))
-                col2.markdown("Team 1 win Results")
-                col2.dataframe((pd.DataFrame(home_w_df.loc[0].nlargest(3)).T)*(1/(home_w_df.loc[0].nlargest(3).values.sum())))
-                col3.markdown("Team 2 win Results")
-                col3.dataframe((pd.DataFrame(away_w_df.loc[0].nlargest(3)).T)*(1/(away_w_df.loc[0].nlargest(3).values.sum())))
-
-	
-#functions for model 1
-#Assign values from the dataframe to the team name and retuen a dataframe with all team1 data
-def assign_values_to_team1(team):
-    
-    if team in df_2.index :
-        team1_data =  df_2.loc[team].reset_index()
-        team1_data = team1_data.groupby('index').mean().reset_index().rename(columns={'index':'home_team.name'}).iloc[0]
-        return team1_data
-
-#Assign values from the dataframe to the team name and retuen a dataframe with all team2 data
-def assign_values_to_team2(team):
-    
-    if team in df_3.index :
-        team2_data =  df_3.loc[team].reset_index()
-        team2_data = team2_data.groupby('index').mean().reset_index().rename(columns={'index':'away_team.name'}).iloc[0]
-        return team2_data
-
-
-#run the assign values functions and concat the resultiung 2 dataframes into one dataframe for the model input
-def map_inputs_to_data(team1,team2):
-
-    team_1z = assign_values_to_team1(team1)
-               
-    team_2z = assign_values_to_team2(team2)
-
-    input_data = pd.concat([team_1z,team_2z])
-    return input_data
-
-
-#get the input data and preprocess the data using the loaded data processing Pipeline,
-#and predict the match result probabilities using predict_proba function, and return a dataframe with the probabilites.
-def predict_match_result(team1 ,team2):
-
-
-    input_d = map_inputs_to_data(team1 , team2)
-    input_processed = pipeline.transform(pd.DataFrame(input_d).T)
-    preds_test = model.predict_proba(input_processed)
-      
-    results_df = pd.DataFrame(columns=classes,data=np.round(preds_test,3))
-    results_df.rename(columns={0:'Draw Probability',1:'{} wins Probability'.format(team1),2:'{} wins Probability'.format(team2)},inplace=True)
-    return results_df
+		
 
 #functions for model2 data assignment
 #Assign values from the dataframe to the team name and retuen a dataframe with all team1 data
@@ -256,6 +206,27 @@ def predict_match_result_goals(team3 ,team4):
     away_w_df = results_df[[x for x in results_df.columns if (int(x[0]) < int(x[2]))]]
 
     return draw_df,home_w_df,away_w_df
+
+#function to display confusion matrix
+def plot_confusion_matrix(y_test,preds):
+    fig, ax = plt.subplots(figsize=(6, 6))
+    conf_matrix = confusion_matrix(y_test,preds)
+    
+    ax.matshow(conf_matrix, cmap=plt.cm.Blues, alpha=0.3)
+    for i in range(conf_matrix.shape[0]):
+        for j in range(conf_matrix.shape[1]):
+            ax.text(x=j, y=i,s=conf_matrix[i, j], va='center', ha='center', size='large')
+     
+    plt.xlabel('Predictions', fontsize=15)
+    plt.ylabel('Actuals', fontsize=15)
+    ticks = ['Draw','Team1 Win','Team2 Win']
+    labels= [0,1,2]
+    plt.xticks(labels,ticks)
+    plt.yticks(labels,ticks)
+    plt.title('Confusion Matrix', fontsize=16)
+    
+    return fig
+    
     
 	
 if __name__=='__main__':
