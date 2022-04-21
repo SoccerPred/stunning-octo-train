@@ -16,6 +16,7 @@ from numpy import loadtxt
 import pickle
 import matplotlib.pyplot as plt
 import streamlit as st
+import xgboost as xgb
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import recall_score, precision_score , accuracy_score ,f1_score
