@@ -10,22 +10,22 @@ Soccer World cup prediction app
   4. Friendly macthes for years 2020-2021-2022 
     (https://fbref.com/en/comps/218/3697/stats/2020-Friendlies-M-Stats)
     (https://fbref.com/en/comps/218/10979/stats/2021-Friendlies-M-Stats)
-    ((https://fbref.com/en/comps/218/stats/Friendlies-M-Stats))
+    (https://fbref.com/en/comps/218/stats/Friendlies-M-Stats)
 
 #### The main features are :
-  PI : number of players
-  MP : matches played
-  90s : minutes played divided by 90
-  GLs : goals
-  Ast : assistance
-  G-PK: non - penalty goals
-  PK :penalty kicks made
-  PKatt : penalty kicks attempted
-  CrdY : yellow cards
-  CrdR : red cards
-  G+A : goals + assists
-  G-PK.1 :goals minus penalty kicks
-  G+A-PK : goals + assists minus penalty kicks
+  * PI : number of players
+  * MP : matches played
+  * 90s : minutes played divided by 90
+  * GLs : goals
+  * Ast : assistance
+  * G-PK: non - penalty goals
+  * PK :penalty kicks made
+  * PKatt : penalty kicks attempted
+  * CrdY : yellow cards
+  * CrdR : red cards
+  * G+A : goals + assists
+  * G-PK.1 :goals minus penalty kicks
+  * G+A-PK : goals + assists minus penalty kicks
 
 For dupliaces team names i used the average statistics of different datasets.
 
