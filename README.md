@@ -48,5 +48,44 @@ For dupliaces team names i used the average statistics of different datasets.
 
 The matches results data from 2010 to 2018 was merged with the new data from API to get all matches data from 2010 to 2022, and added the rank data and average teams statistics to each team in one dataframe
 
+## Libraries Used:
+1. Pandas (for data processing)
+2. Matplotlib (for visualizations for checking the data)
+3. Scikit Learn (for data preprocessing and data split into train and test data)
+4. Xgboost (to build the classification models)
+5. json (to load API data)
+6. urllib.request (to open the URL and receive the API response)
+7. pickle (to save the trained models)
+
+## Data Processing:
+1. Teams' names are checked to be the same in different datasets.
+2. datasets are merged together to form one dataset contains matches results from 2010 and average statitics for each team.
+3. For the teams average stats, if there are many records of each team we calculate the average. and each team stats are merged to the team results data.
+4. New Column created to show the match result as 1 if Team 1 wins, 2 if Team2 wins and 0 for draw.
+5. We made 2 special dataframes for Team1 and Team2 statistics so when the user inputs the team name we map the statistics data from these dataframes to be ready for the model input.
+6. We use Preprocess pipeline to OneHotEncode the categorical variables as Team names, and create Principla component analysis for dinensionality reduction.
+
+## Model building
+Two models are built.
+1. The first model to predict the match winner and provide the probability of each team winning.
+I used 80% of the data for training and 20% for testing. we tried Logistic Regression and XGBoost Classifier have been tried with Cross validation and Hyperparameters tuning for better results.
+  we decided to go with the XGboost model as it gives little higher accuracy (57%).
+
+2.The second model is to predict the match score and gives the highest 3 porbabilities of score in each case Win, Lose, Draw.
+
+## Web app with Streamlit
+The web app has 2 pages
+1. The first page has 2 dropdown menus for teams selection, and predict the match winner probability and match score probability and display the results in tables
+2. The second page displays the first model evaluation metrics as Accuracy, precision, Recall ,and confusion matrix.
+
+The requirements.txt and Dockerfile, are required files for deploying the web app on streamlit.
+## Requirements.txt 
+the requirement file has all libraries used and their versions, to install the libraries for the deployment process.
+
+## Dockerlfile 
+includes the run command to run the file with streamlit
+
+
+
 
 
