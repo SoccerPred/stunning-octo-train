@@ -75,8 +75,19 @@ I used 80% of the data for training and 20% for testing. we tried Logistic Regre
 
 ## Web app with Streamlit
 The web app has 2 pages
-1. The first page has 2 dropdown menus for teams selection, and predict the match winner probability and match score probability and display the results in tables, and the average statistics of each team.
-2. The second page displays the first model evaluation metrics as Accuracy, precision, Recall ,and confusion matrix.
+1. The first page has 2 dropdown menus for teams selection, and predict the match winner probability and match score probability and display the results in tables, and the average statistics of each team with :
+- Team Rank (Fifa rank updated by march 2022)
+- Team average Age (By Fifa updated by march 2022)
+- Team Total value in Euros (By Fifa updated by march 2022)
+- Team points (by which the Rank is calculated by Fifa updated by march 2022)
+- Average matches played in each Tournament.
+- Average goals in each Tournament.
+- Average assists in each Tournament.
+- Average goals in each Tournament.
+- Average yellow cards in each Tournament.
+- Average red cards in each Tournament.
+
+3. The second page displays the first model evaluation metrics as Accuracy, precision, Recall ,and confusion matrix.
 
 The requirements.txt and Dockerfile, are required files for deploying the web app on streamlit.
 ## Requirements.txt 
