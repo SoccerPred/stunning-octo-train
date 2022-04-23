@@ -136,6 +136,14 @@ def main():
                     col3.markdown(hide_table_row_index, unsafe_allow_html=True)
                     col3.table(((pd.DataFrame(away_w_df.loc[0].nlargest(3)).T)*(1/(away_w_df.loc[0].nlargest(3).values.sum()))).style.format("{:.3f}"))
 
+                    st.subheader('Teams statistics')
+
+                    col4,col5 = st.columns(2)
+                    
+                    col4.dataframe(get_team1_stats(team_3).style.format("{:.2f}"))
+
+                    col5.dataframe(get_team2_stats(team_4).style.format("{:.2f}"))
+
 
 	else:
 		st.header('Match Winner Prediction Model Performance')
@@ -227,7 +235,29 @@ def plot_confusion_matrix(y_test,preds):
     plt.title('Confusion Matrix', fontsize=16)
     
     return fig
-    
+
+def get_team1_stats(team):
+    s = assign_values_to_team3(team)
+    s.index = s.index.str.replace('home_team.', 'Team 1 ')
+    s.index = s.index.str.replace('home_', '')
+    s.rename(index={'90s':'Avg. Minutes played' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 1 Total value':'Total Value in Euros'},inplace=True)
+    s = pd.DataFrame(s)
+    s.columns = [s.iloc[0][0]]
+    s = s.loc[['Team 1 Rank','Team 1  age','Total Value in Euros','Team 1 Points','Avg. Minutes played','Avg. Goals','Avg. Assists',
+              'Avg. Yellow Cards','Avg. Red Cards']]
+    return s
+
+def get_team2_stats(team):
+    s = assign_values_to_team4(team)
+    s.index = s.index.str.replace('away_team.', 'Team 2 ')
+    s.index = s.index.str.replace('away_', '')
+    s.rename(index={'90s':'Avg. Minutes played' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 2 Total value':'Total Value in Euros'},inplace=True)
+    s = pd.DataFrame(s)
+    s.columns = [s.iloc[0][0]]
+    s = s.loc[['Team 2 Rank','Team 2  age','Total Value in Euros','Team 2 Points','Avg. Minutes played','Avg. Goals','Avg. Assists',
+              'Avg. Yellow Cards','Avg. Red Cards']]
+    return s
+
     
 	
 if __name__=='__main__':
