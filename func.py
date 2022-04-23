@@ -104,11 +104,12 @@ def get_team1_stats(team,df_home):
     s = assign_values_to_team3(team,df_home)
     s.index = s.index.str.replace('home_team.', 'Team 1 ')
     s.index = s.index.str.replace('home_', '')
-    s.rename(index={'90s':'Avg. Matches played/tournament' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 1 Total value':'Total Value in Million €'},inplace=True)
+    s.rename(index={'90s':'Avg. Minutes played' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 1 Total value':'Total Value in Million €'},inplace=True)
     s = pd.DataFrame(s)
     s.columns = [s.iloc[0][0]]
     s.loc['Total Value in Million €'] = s.loc['Total Value in Million €']/1000000
-    s = s.loc[['Team 1 Rank','Team 1  age','Total Value in Million €','Team 1 Points','Avg. Matches played/tournament','Avg. Goals','Avg. Assists',
+    s.loc['Avg. Minutes played'] = s.loc['Avg. Minutes played'] * 90
+    s = s.loc[['Team 1 Rank','Team 1  age','Total Value in Million €','Team 1 Points','Avg. Minutes played','Avg. Goals','Avg. Assists',
               'Avg. Yellow Cards','Avg. Red Cards']]
     return s
 
@@ -116,10 +117,11 @@ def get_team2_stats(team,df_away):
     s = assign_values_to_team4(team,df_away)
     s.index = s.index.str.replace('away_team.', 'Team 2 ')
     s.index = s.index.str.replace('away_', '')
-    s.rename(index={'90s':'Avg. Matches played/tournament' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 2 Total value':'Total Value in Million €'},inplace=True)
+    s.rename(index={'90s':'Avg. Minutes played' , 'Gls':'Avg. Goals','Ast':'Avg. Assists','CrdY':'Avg. Yellow Cards','CrdR':'Avg. Red Cards','Team 2 Total value':'Total Value in Million €'},inplace=True)
     s = pd.DataFrame(s)
     s.columns = [s.iloc[0][0]]
     s.loc['Total Value in Million €'] = s.loc['Total Value in Million €']/1000000
-    s = s.loc[['Team 2 Rank','Team 2  age','Total Value in Million €','Team 2 Points','Avg. Matches played/tournament','Avg. Goals','Avg. Assists',
+    s.loc['Avg. Minutes played'] = s.loc['Avg. Minutes played'] * 90
+    s = s.loc[['Team 2 Rank','Team 2  age','Total Value in Million €','Team 2 Points','Avg. Minutes played','Avg. Goals','Avg. Assists',
               'Avg. Yellow Cards','Avg. Red Cards']]
     return s
