@@ -89,7 +89,7 @@ The web app has 2 pages
 - Average yellow cards in each Tournament.
 - Average red cards in each Tournament.
 
-3. The second page displays the first model evaluation metrics as Accuracy, precision, Recall ,and confusion matrix.
+2. The second page displays the first model evaluation metrics as Accuracy, precision, Recall ,and confusion matrix.
 
 The requirements.txt and Dockerfile, are required files for deploying the web app on streamlit.
 ## Requirements.txt 
