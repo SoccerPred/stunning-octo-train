@@ -194,9 +194,21 @@ def map_inputs_to_data2(team1,team2):
 #and predict the match result probabilities using predict_proba function, and return a dataframe with the probabilites.
 def predict_match_result2(team3 ,team4):
 
+    #predict the match result
     input_d = map_inputs_to_data2(team3 , team4)
     input_processed = pipeline2.transform(pd.DataFrame(input_d).T)
-    preds_test = model2.predict_proba(input_processed)
+    preds_test1 = model2.predict_proba(input_processed)
+
+    #predict the match result in case we swaped the teams
+    input_d2 = map_inputs_to_data2(team4 , team3)
+    input_processed2 = pipeline2.transform(pd.DataFrame(input_d2).T)
+    preds_test2 = model2.predict_proba(input_processed2)
+
+    #swap the predicted values for team 1 and team 2
+    preds_test2[0][2], preds_test2[0][1] = preds_test2[0][1], preds_test2[0][2]
+
+    #calculate the average prediction for both cases 
+    preds_test = (preds_test1 + preds_test2)/2
       
     results_df = pd.DataFrame(columns=classes2,data=np.round(preds_test,3))
     results_df.rename(columns={0:'Draw Probability',1:'{} wins Probability'.format(team3),2:'{} wins Probability'.format(team4)},inplace=True)
@@ -205,9 +217,21 @@ def predict_match_result2(team3 ,team4):
 #Predict function for the final match result prediction
 def predict_match_result_goals(team3 ,team4):
 
+    #predict the match score probability
     input_d = map_inputs_to_data2(team3 , team4)
     input_processed = pipeline2.transform(pd.DataFrame(input_d).T)
-    preds_test = model3.predict_proba(input_processed)
+    preds_test1 = model3.predict_proba(input_processed)
+
+    #predict the match score probability in case we swaped the teams
+    input_d2 = map_inputs_to_data2(team4 , team3)
+    input_processed2 = pipeline2.transform(pd.DataFrame(input_d2).T)
+    preds_test2 = model3.predict_proba(input_processed2)
+
+    #swap the predicted values for team 1 and team 2
+    preds_test2[0][2], preds_test2[0][1] = preds_test2[0][1], preds_test2[0][2]
+
+    #calculate the average prediction for both cases 
+    preds_test = (preds_test1 + preds_test2)/2
       
     results_df = pd.DataFrame(columns=classes3,data=np.round(preds_test,4))
     draw_df = results_df[[x for x in results_df.columns if (int(x[0]) == int(x[2]))]]
