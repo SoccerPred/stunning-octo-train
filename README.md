@@ -13,19 +13,21 @@ Soccer World cup prediction app
     (https://fbref.com/en/comps/218/stats/Friendlies-M-Stats)
 
 #### The main features are :
-  * PI : number of players
-  * MP : matches played
-  * 90s : minutes played divided by 90
-  * GLs : goals
-  * Ast : assistance
-  * G-PK: non - penalty goals
-  * PK :penalty kicks made
-  * PKatt : penalty kicks attempted
-  * CrdY : yellow cards
-  * CrdR : red cards
-  * G+A : goals + assists
-  * G-PK.1 :goals minus penalty kicks
-  * G+A-PK : goals + assists minus penalty kicks
+
+
+  - G-PK: non penalty goals
+  - PI : number of players
+  - MP : matches played
+  - 90s : minutes played divided by 90
+  - GLs : goals
+  - Ast : assistance
+  - PK :penalty kicks made
+  - PKatt : penalty kicks attempted
+  - CrdY : yellow cards
+  - CrdR : red cards
+  - G+A : goals + assists
+  - G-PK.1 :goals minus penalty kicks
+  - G+A-PK : goals + assists minus penalty kicks
 
 For dupliaces team names i used the average statistics of different datasets.
 
