@@ -2,8 +2,8 @@ Build and deploy
 
 Command to build the application. PLease remeber to change the project name and application name
 
-gcloud builds submit --tag gcr.io/wc-predict/WorldCup-Prediction  --project=wc-predict
+gcloud builds submit --tag gcr.io/LZTechnologyLLC/WorldCup-Prediction  --project=LZTechnologyLLC
   
 Command to deploy the application
   
-gcloud run deploy --image gcr.io/wc-predict/WorldCup-Prediction --platform managed  --project=wc-predict --allow-unauthenticated
+gcloud run deploy --image gcr.io/LZTechnologyLLC/WorldCup-Prediction --platform managed  --project=LZTechnologyLLC --allow-unauthenticated
