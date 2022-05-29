@@ -9,7 +9,7 @@ from configuration import *
 from utils_aws import *
 
 
-def collecting_data():
+def upload_data():
 
 	hist_df = api_data_handler(URL_LIST)
 	stats_df = stats_data_handler(2014_url,2010_url,2018_url,2022_friendlies,2021_friendlies,2020_friendlies)
@@ -20,4 +20,7 @@ def collecting_data():
 	s3_client.Bucket(AWS_BUCKET_NAME).upload_file("/Model 2/Data/from_2017_matches_history.csv", "dump/hist.csv")
 	s3_client.Bucket(AWS_BUCKET_NAME).upload_file("/Model 2/Data/team_avg_statistics_including_friendly.csv", "dump/stats.csv")
 	s3_client.Bucket(AWS_BUCKET_NAME).upload_file("/Model 2/Data/rank.csv", "dump/rank.csv")
+
+if __name__ == "__main__":
+	upload_data()
 
