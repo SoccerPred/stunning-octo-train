@@ -12,8 +12,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import RandomizedSearchCV 
+import xgboost as xgb
 import pickle
-
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -22,6 +23,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import savetxt
+sys.path.append('../')
+from configuration import * 
 
 
 
@@ -70,6 +74,7 @@ def create_pipeline(categorical_cols,numerical_cols):
 	return preprocess_pipeline
 
 def process_final_data():
+	#df = pd.read_csv('s3 file path url')
 	df = get_final_data_from_s3('dump/final_df.csv')
 
 	#rename column titles
@@ -115,7 +120,6 @@ def process_final_data():
 
 
 	#saving the dataframes to use later in the model file for deployment
-	#TODO : Edit the save path
 	df_2.to_csv('Data/df_home_all2.csv')
 	df_3.to_csv('Data/df_away_all2.csv')
 
@@ -149,23 +153,24 @@ def building_the_model(df):
 	#splitting the data to 80% train and 20% test for features and target data
 	X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=0.20,random_state=42)
 
-	#make cross validation with hyperparameters tuning for best performance using grid search.
-	solvers = ['newton-cg', 'lbfgs', 'liblinear']
-	penalty = ['l2','none']
-	c_values = [300,100, 10, 1.0, 0.1, 0.01]
-	# define grid search
-	grid = dict(solver=solvers,penalty=penalty,C=c_values)
-	model = LogisticRegression(max_iter=3000)
+	xgb_cl = xgb.XGBClassifier()
 
-	#cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-	grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=5, scoring='accuracy',error_score=0)
+	param_xgb = {
+	    "max_depth": [3, 4, 5, 7],
+	    "learning_rate": [0.1, 0.01, 0.05],
+	    "gamma": [0, 0.25, 1]
+	}
 
-	#fitting the model on the train data
-	grid_search.fit(X_train_val , y_train_val)
+	xgb_cv = RandomizedSearchCV(xgb_cl , param_xgb,
+	                              n_jobs=-1, cv=5 )
+
+	xgb_cv.fit(X_train_val , y_train_val)
+
+	preds2 = xgb_cv.predict(X_test)
 
 
 	pickle_out = open("model2.pkl", "wb")
-	pickle.dump(grid_search, pickle_out)
+	pickle.dump(xgb_cv, pickle_out)
 	pickle_out.close()
 
 	pickle_out2 = open("pipeline2.pkl", "wb")
@@ -176,7 +181,7 @@ def building_the_model(df):
 	s3_client = get_AWS_client('s3')
 	bucket = s3_client.Bucket(AWS_BUCKET_NAME)
 
-	pickle_byte_obj = pickle.dumps(grid_search)
+	pickle_byte_obj = pickle.dumps(xgb_cv)
 	key1 = 'model2.pkl'
 	s3_client.Object(bucket,key1).put(Body=pickle_byte_obj)
 
@@ -184,7 +189,12 @@ def building_the_model(df):
 	key2 = 'pipeline2.pkl.pkl'
 	s3_client.Object(bucket,key2).put(Body=pickle2_byte_obj)
 
-	return grid_search
+	with s3_client.open(f"s3://{Bucket}/xgb_preds.csv",'w') as f:
+    	numpy.savetxt(f, preds2, delimiter=",")
+    with s3_client.open(f"s3://{Bucket}/xgb_ytest.csv",'w') as f:
+    	numpy.savetxt(f, y_test, delimiter=",")
+
+	return xgb_cv
 
 
 def train_match_score_model():
@@ -228,31 +238,34 @@ def train_match_score_model():
 	#splitting the data to 80% train and 20% test for features and target data
 	X_train_val2, X_test2, y_train_val2, y_test2 = train_test_split(X_g, y_g, test_size=0.20,random_state=42)
 
-	#make cross validation with hyperparameters tuning for best performance using grid search.
-	c_values = [300,10,0.1]
-	# define grid search
-	grid2 = dict(C=c_values)
-	model2 = LogisticRegression(max_iter=3000 )
+	xgb_cl2 = xgb.XGBClassifier()
 
-	grid_search2 = GridSearchCV(estimator=model2, param_grid=grid2, n_jobs=-1, cv=5, scoring='accuracy',error_score=0)
+	param_xgb = {
+	    "max_depth": [3, 4, 5, 7],
+	    "learning_rate": [0.1, 0.01, 0.05],
+	    "gamma": [0, 0.25, 1]
+	}
 
-	#fitting the model on the train data
-	grid_search2.fit(X_train_val2 , y_train_val2)
+	xgb_cv2 = RandomizedSearchCV(xgb_cl2 , param_xgb,
+	                              n_jobs=-1, cv=5 )
+
+	xgb_cv2.fit(X_train_val2 , y_train_val2)
+
 
 	# pickling the model to use for deployment
 	pickle_out = open("model_goals.pkl", "wb")
-	pickle.dump(grid_search2, pickle_out)
+	pickle.dump(xgb_cv2, pickle_out)
 	pickle_out.close()
 
 	#adding to AWS S3
 	s3_client = get_AWS_client('s3')
 	bucket = s3_client.Bucket(AWS_BUCKET_NAME)
 
-	pickle_byte_obj = pickle.dumps(grid_search2)
+	pickle_byte_obj = pickle.dumps(xgb_cv2)
 	key3 = 'model_goals.pkl'
 	s3_client.Object(bucket,key3).put(Body=pickle_byte_obj)
 
-	return grid_search2
+	return xgb_cv2
 
 
 def handle_model_building():

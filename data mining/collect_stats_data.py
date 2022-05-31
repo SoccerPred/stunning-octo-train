@@ -1,6 +1,6 @@
 import pandas as pd
 sys.path.append('../')
-from configuration import 2014_url , 2010_url,2018_url,2022_friendlies,2021_friendlies,2020_friendlies , DF_COLUMNS
+from configuration import * 
 
 def process_df(df):
 	df.columns = df.columns.droplevel(0)

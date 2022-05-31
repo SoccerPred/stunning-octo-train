@@ -22,6 +22,10 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import recall_score, precision_score , accuracy_score ,f1_score
 from func import assign_values_to_team3, assign_values_to_team4, map_inputs_to_data2 , predict_match_result2, predict_match_result_goals
 from func import plot_confusion_matrix, get_team1_stats , get_team2_stats
+from configuration import * 
+
+s3_client = get_AWS_client('s3')
+Bucket = AWS_BUCKET_NAME
 
 
 class DataFrameSelector(BaseEstimator,TransformerMixin):
@@ -33,21 +37,28 @@ class DataFrameSelector(BaseEstimator,TransformerMixin):
         return X[self.attribute_names]
 
 
-
 #loading in the model and the pipeline files to predict on the data for the second model
-pickle_in4 = open('model2_xgb.pkl', 'rb')
+pickle_in4 = pickle.loads(s3_client.Bucket(AWS_BUCKET_NAME).Object("model2_xgb.pkl").get()['Body'].read())
 model2 = pickle.load(pickle_in4)
 classes2 = model2.classes_
 
-pickle_in5 = open('pipeline2.pkl', 'rb')
+pickle_in5 = pickle.loads(s3_client.Bucket(AWS_BUCKET_NAME).Object("pipeline2.pkl").get()['Body'].read())
 pipeline2 = pickle.load(pickle_in5)
 
-pickle_in6 = open('model_goals_xgb.pkl', 'rb')
+pickle_in6 = pickle.loads(s3_client.Bucket(AWS_BUCKET_NAME).Object("model_goals_xgb.pkl").get()['Body'].read())
 model3 = pickle.load(pickle_in6)
 classes3 = model3.classes_
 
-xgb_preds = loadtxt('xgb_preds.csv', delimiter=',')
-ytest = loadtxt('xgb_ytest.csv', delimiter=',')
+#TOdO : change file path to S3 file path link
+
+def get_data_from_aws(Bucket,s3_client):
+    with s3_client.open(f"s3://{Bucket}/xgb_preds.csv",'w') as f:
+        xgb_preds = numpy.loadtxt(f, preds2, delimiter=",")
+    with s3_client.open(f"s3://{Bucket}/xgb_ytest.csv",'w') as f:
+        ytest = numpy.loadtxt(f, y_test, delimiter=",")
+    
+    return xgb_preds, ytest 
+xgb_preds,ytest = get_data_from_aws(Bucket,s3_client)
 
 
 #create choose list for second model including the teams names from the trained data
@@ -65,8 +76,9 @@ team2_list2 = team1_list2.copy()
 
 #read the meta data for both home and away teams to assign the data
 #based on the choosen team for the second model
-df_home = pd.read_csv('df_home_all2.csv',index_col=0)
-df_away = pd.read_csv('df_away_all2.csv',index_col=0)
+
+df_home = pd.read_csv(f"s3://{Bucket}/df_home_all2.csv",index_col=0)
+df_away = pd.read_csv(f"s3://{Bucket}/df_away_all2.csv",index_col=0)
                 
 def welcome():
 	return 'welcome all'
